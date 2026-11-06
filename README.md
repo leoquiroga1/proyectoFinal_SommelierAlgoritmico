@@ -137,34 +137,58 @@ La arquitectura del Sommelier Algorítmico determina las decisiones de alto impa
 ### Diagrama de Contexto C4
 
 ```mermaid
-C4Context
-  title Diagrama de Contexto (Nivel 1) - Sommelier Algorítmico
+flowchart LR
+    %% Definición de Nodos (Formas)
+    Usuario((Técnico / Enólogo))
+    Sistema[Sommelier Algorítmico]
+    Dataset[(Dataset UCI / Histórico)]
 
-  Person(usuario, "Enólogo / Técnico", "Personal del laboratorio vitivinícola.")
-  System(sistema, "Sommelier Algorítmico", "Clasifica la calidad del vino en Premium o Estándar basándose en características químicas.")
+    %% Relaciones (Flechas)
+    Usuario -- "Consulta la calidad (HTTPS)" --> Sistema
+    Sistema -- "Se alimenta del histórico (CSV/DB)" --> Dataset
 
-  Rel(usuario, sistema, "Ingresa parámetros químicos y recibe clasificación de calidad")
+    %% Estilos de colores oficiales de C4
+    classDef persona fill:#08427b,stroke:#052e56,color:#ffffff,stroke-width:2px;
+    classDef sistema fill:#1168bd,stroke:#0b4884,color:#ffffff,stroke-width:2px;
+    classDef externo fill:#999999,stroke:#666666,color:#ffffff,stroke-width:2px;
+
+    class Usuario persona;
+    class Sistema sistema;
+    class Dataset externo;
 ```
 
-### Diagrama de Contenedores C4
+### Diagrama de Contenedores C4 (Nivel 2)
 
 ```mermaid
-C4Container
-  title Diagrama de Contenedores (Nivel 2) - Sommelier Algorítmico
+flowchart LR
+    %% Definición de Nodos
+    Usuario((Técnico / Enólogo))
 
-  Person(usuario, "Enólogo / Técnico", "Personal del laboratorio vitivinícola.")
+    subgraph Sistema ["Sommelier Algorítmico"]
+        Frontend[Interfaz de Consulta <br/> SPA / Web]
+        API[API de Predicción <br/> Python / FastAPI]
+        Modelo[Modelo Predictivo <br/> Scikit-Learn .pkl]
+        BD[(Base de Datos <br/> SQL / Logs)]
+    end
 
-  System_Boundary(c1, "Sommelier Algorítmico") {
-    Container(frontend, "Interfaz de Consulta", "SPA / Web", "Permite al técnico ingresar los 11 parámetros químicos y muestra el resultado.")
-    Container(api, "API de Predicción", "Python / FastAPI", "Valida los datos de entrada, coordina el proceso y devuelve la respuesta.")
-    Container(modelo, "Modelo Predictivo", "Scikit-Learn (.pkl)", "Árbol de Decisión entrenado que determina si el vino es Premium o Estándar.")
-    ContainerDb(bd, "Base de Datos", "SQL", "Almacena los registros históricos de las consultas y predicciones realizadas.")
-  }
+    Dataset[(Dataset UCI / Histórico)]
 
-  Rel(usuario, frontend, "Ingresa datos", "HTTPS")
-  Rel(frontend, api, "Solicita predicción", "JSON/REST")
-  Rel(api, modelo, "Ejecuta inferencia con los datos", "Carga en memoria")
-  Rel(api, bd, "Guarda logs y resultados", "Conexión SQL")
+    %% Relaciones
+    Usuario -- "Ingresa 11 parámetros (HTTPS)" --> Frontend
+    Frontend -- "Solicita predicción (JSON/REST)" --> API
+    API -- "Ejecuta inferencia" --> Modelo
+    API -- "Guarda registros y logs" --> BD
+    API -. "Entrenamiento previo" .-> Dataset
+
+    %% Estilos de colores oficiales de C4
+    classDef persona fill:#08427b,stroke:#052e56,color:#ffffff,stroke-width:2px;
+    classDef contenedor fill:#1168bd,stroke:#0b4884,color:#ffffff,stroke-width:2px;
+    classDef baseDatos fill:#1168bd,stroke:#0b4884,color:#ffffff,stroke-width:2px;
+    classDef externo fill:#999999,stroke:#666666,color:#ffffff,stroke-width:2px;
+
+    class Usuario persona;
+    class Frontend,API,Modelo contenedor;
+    class BD,Dataset baseDatos;
 ```
 
 ---
