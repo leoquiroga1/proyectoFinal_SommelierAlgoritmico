@@ -330,3 +330,306 @@ Separamos los datos y definimos qué será usado para el entrenamiento y qué se
 Seguimos con el entrenamiento del modelo y la generación del archivo .pkl que va a ser el cerebro de nuestra API
 
 Analizamos los resultados basados en la matriz de confusión, como lo hicimos anteriormente, y finalmente hacemos pruebas de nuestro modelo simulando una API que es la que entregaremos en entregas futuras del proyecto. Después de este segundo análisis nos dimos cuenta que aunque propusimos superar el 80% en las cuatro métricas, nos encontramos que esto no es alcanzable con este dataset en el que solo el 20% de los vinos son Premium, y las variables fisicoquímicas no explican completamente la calidad sensorial del vino. Por eso después de eso priorizamos el Recall (86,05%), para no dejar pasar vinos Premium por error, aceptando una Precision más baja (41,57%) como un trade-off consciente y documentado del proyecto.
+
+## 13.1 Implementación interfaz web y modelo de recomendación de vinos
+
+Descripción
+
+Se realiza el aporte correspondiente al desarrollo de la aplicación Sommelier Algorítmico, orientada a la clasificación y recomendación de vinos mediante técnicas de Machine Learning.
+
+Codigo implementado:
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import pickle
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
+
+1.	Cargarmos del dataset local y utilizamos sep=';' porque el dataset que descargamos tiene separador punto y coma, igualmente decidimos iniciar con los vinos rojos.
+
+data = pd.read_csv('winequality-red.csv', sep=';')
+
+2.	Definimos la etiqueta binaria de clasificación de los vinos 
+
+(Premium >= 7, Estándar < 7)
+data['Premium'] = data['quality'].apply(lambda x: 1 if x >= 7 else 0)
+
+3.	Separarmos las 11 variables de entrada (X) y la etiqueta (y)
+
+X = data.drop(['quality', 'Premium'], axis=1)
+y = data['Premium']
+
+4.	Hacemos un split estricto antes de la transformación (asi verificamos tener aparte los datos para test y entrenamiento).
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+5.	Entrenarmos el modelo a traves del arbol de decision (Decision Tree Classifier) con profundidad máxima de 5 y balanceando las clases
+modelo = DecisionTreeClassifier(max_depth=5, class_weight='balanced', random_state=42)
+modelo.fit(X_train, y_train)
+6.	Ejecutamos las predicciones sobre el conjunto de prueba
+y_pred = modelo.predict(X_test)
+7.	Imprimimos las métricas que definimos inicialmente en la propuesta de proyecto (Accuracy, Precision, Recall y F1-Score)
+print("--- MÉTRICAS DE EVALUACIÓN (Clase Positiva: Premium) ---")
+print(f"Accuracy (Exactitud): {accuracy_score(y_test, y_pred):.2f}")
+print(f"Precision (Precisión): {precision_score(y_test, y_pred):.2f}")
+print(f"Recall (Exhaustividad): {recall_score(y_test, y_pred):.2f}")
+print(f"F1-Score: {f1_score(y_test, y_pred):.2f}")
+8.	Exportamos el modelo para usarlo en la API
+with open('wine_quality_model.pkl', 'wb') as f:
+pickle.dump(modelo, f)
+print("\nModelo guardado exitosamente como 'wine_quality_model.pkl'")
+9.	Mostramos la gráfica de la Matriz de Confusión
+cm = confusion_matrix(y_test, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Estándar (0)', 'Premium (1)'])
+disp.plot(cmap=plt.cm.Blues)
+plt.title("Matriz de Confusión - Sommelier Algorítmico")
+plt.show()
+
+Interfaz visual:
+ <img width="1242" height="749" alt="interfaz" src="https://github.com/user-attachments/assets/ed387e0c-9a8e-4364-b803-d3c64a4beea0" />
+
+Resultado esperado de la prueba
+<img width="850" height="197" alt="prueba 1" src="https://github.com/user-attachments/assets/90f43475-12b9-4705-a138-4e02fe4f5259" />
+
+Cambios realizados
+
+En este aporte se desarrolló la interfaz web de la aplicación Sommelier Algorítmico, permitiendo al usuario ingresar las características fisicoquímicas de un vino para su análisis. Además, se integró el modelo de Machine Learning previamente entrenado para realizar la predicción y clasificación de la calidad del vino. Como complemento, se incorporó una sección que presenta recomendaciones y observaciones basadas en los resultados obtenidos. También se realizaron mejoras en el diseño visual de la aplicación para facilitar la interacción del usuario, junto con ajustes de organización y optimización del código HTML y CSS para mejorar su estructura, mantenimiento y legibilidad.
+
+Index ajustado:
+<title>🍷 Sommelier Algorítmico</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 30px;
+    }
+
+    .contenedor {
+        max-width: 800px;
+        margin: auto;
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    h1 {
+        text-align: center;
+        color: #722F37;
+    }
+
+    .subtitulo {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .campo {
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 25px;
+        padding: 15px;
+        background: #722F37;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #5A252B;
+    }
+
+    .resultado {
+        margin-top: 30px;
+        padding: 25px;
+        border-left: 6px solid #722F37;
+        background: #fafafa;
+        border-radius: 10px;
+    }
+
+    .vino {
+        font-size: 28px;
+        font-weight: bold;
+        color: #722F37;
+    }
+
+    .recomendacion {
+        margin-top: 15px;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+
+    .recomendacion h3 {
+        color: #722F37;
+        margin-top: 15px;
+        margin-bottom: 10px;
+    }
+
+    .recomendacion ul {
+        text-align: left;
+        display: inline-block;
+        padding-left: 20px;
+    }
+
+    .recomendacion li {
+        margin-bottom: 8px;
+    }
+</style>
+<h1>🍷 Sommelier Algorítmico</h1>
+
+<p class="subtitulo">
+    Clasificación inteligente de vinos mediante Machine Learning
+</p>
+
+<form action="/predecir" method="POST">
+
+    <div class="grid">
+
+        <div class="campo">
+            <label>Acidez fija</label>
+            <input type="number" step="0.01" name="fixed_acidity" required>
+        </div>
+
+        <div class="campo">
+            <label>Acidez volátil</label>
+            <input type="number" step="0.01" name="volatile_acidity" required>
+        </div>
+
+        <div class="campo">
+            <label>Ácido cítrico</label>
+            <input type="number" step="0.01" name="citric_acid" required>
+        </div>
+
+        <div class="campo">
+            <label>Azúcar residual</label>
+            <input type="number" step="0.01" name="residual_sugar" required>
+        </div>
+
+        <div class="campo">
+            <label>Cloruros</label>
+            <input type="number" step="0.001" name="chlorides" required>
+        </div>
+
+        <div class="campo">
+            <label>Dióxido de azufre libre</label>
+            <input type="number" step="0.01" name="free_sulfur_dioxide" required>
+        </div>
+
+        <div class="campo">
+            <label>Dióxido de azufre total</label>
+            <input type="number" step="0.01" name="total_sulfur_dioxide" required>
+        </div>
+
+        <div class="campo">
+            <label>Densidad</label>
+            <input type="number" step="0.00001" name="density" required>
+        </div>
+
+        <div class="campo">
+            <label>pH</label>
+            <input type="number" step="0.01" name="ph" required>
+        </div>
+
+        <div class="campo">
+            <label>Sulfatos</label>
+            <input type="number" step="0.01" name="sulphates" required>
+        </div>
+
+        <div class="campo">
+            <label>Alcohol (%)</label>
+            <input type="number" step="0.1" name="alcohol" required>
+        </div>
+
+    </div>
+
+    <button type="submit">
+        🍷 Analizar Calidad del Vino
+    </button>
+
+</form>
+
+{% if resultado %}
+
+<div class="resultado">
+
+    <div class="vino">
+        {{ resultado }}
+    </div>
+
+    {% if comentarios %}
+    <div class="recomendacion">
+
+        <h3>🔍 Características detectadas</h3>
+
+        <ul>
+            {% for comentario in comentarios %}
+            <li>{{ comentario }}</li>
+            {% endfor %}
+        </ul>
+
+    </div>
+    {% endif %}
+
+    <div class="recomendacion">
+
+        <h3>📋 Recomendación</h3>
+
+        <p>{{ recomendacion }}</p>
+
+    </div>
+
+</div>
+
+{% endif %}
+::::::::
+
+Resultado esperado de la prueba
+<img width="814" height="450" alt="mejora 1" src="https://github.com/user-attachments/assets/54e2d7d2-cbd0-468a-a065-9868c88f033a" />
+
+Tecnologías utilizadas:
+
+Python
+Flask
+HTML5
+CSS3
+Scikit-Learn
+Machine Learning
+
+
+Clasificación de calidad.
+Características detectadas.
+Recomendaciones asociadas al resultado obtenido.
+
+Rama origen
+horjuela81
+
+Rama destino
+dev_equiroga92
+
+Rama principal Develop
