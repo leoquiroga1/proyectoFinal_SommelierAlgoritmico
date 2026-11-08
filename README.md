@@ -284,3 +284,46 @@ Como equipo de trabajo, decidimos no cerrar el proyecto únicamente mostrando c�
 * **Equidad y el Sesgo Industrial:** Nos dimos cuenta de que depender exclusivamente de variables fisicoquímicas crea un sesgo fuerte hacia la "estandarización". Si usamos el modelo a ciegas, terminaríamos castigando a los vinos artesanales o ecológicos, que por naturaleza presentan más variaciones en su pH o acidez. El sistema podría etiquetarlos erróneamente como de baja calidad solo porque no encajan en la fórmula matemática perfecta de una fábrica grande.
 * **Impacto Social y Cultural:** Debatimos sobre lo perjudicial que sería intentar automatizar o reemplazar el trabajo de los catadores con nuestro algoritmo. Reducir la calidad de un vino a simples datos estadísticos le quita todo el valor humano y tradicional a la enología, y podría empujar al mercado a producir vinos genéricos solo para "complacer a la máquina".
 * **Reflexión y Recomendación Final:** Por todo lo anterior, concluimos que nuestra herramienta debe catalogarse estrictamente como un sistema de apoyo a la toma de decisiones. El objetivo principal del software es ahorrarle costos de laboratorio a la empresa detectando de forma temprana lo que evidentemente está dañado; pero **nunca** debe reemplazar el paladar humano. La cata final y la última palabra sobre el producto siempre debe tenerla el experto enólogo.
+
+## 13. Desarrollo del proyecto
+
+Inicialmente creamos el repositorio en GitHub y tomamos el link que usaremos para la configuración en VS Code que será el IDE que usaremos para el montaje y ejecución del modelo. 
+
+![Configuración del repositorio](Pantallazos/1.png)
+
+Luego de que ya tenemos conectado nuestro repositorio y hemos creado las ramas del proyecto acorde a las exigencias del proyecto, nos disponemos a montar un "Virtual environment" y a instalar las herramientas que usaremos, en nuestro caso pandas para cargar, limpiar y manipular los datos en el CSV del vino tinto y blanco, scikit-learn para crear el modelo de árbol de decisión, matplotlib para crear gráficos y visualizaciones, fastapi que nos permite convertir el modelo en una API, y uvicorn que es un servidor que ejecuta aplicaciones FastAPI.
+
+![Instalación de librerías en entorno virtual](Pantallazos/2.png)
+
+Después que teníamos instaladas las librerías y de intentar la ejecución de un intento inicial de código, nos dimos cuenta que el código entero se ejecutaría sin permitirnos ver el paso por paso de como está avanzando el proyecto, los resultados y que cambios hay que aplicar, aunque los resultados del entrenamiento inicial nos arrojó que nuestro modelo ya superaba las métricas de Accuracy y Recall que tenían exactitud del 82% y exhaustividad del 86%, para estas 2 métricas ya habíamos fijado una meta mínima de 80% y 70% respectivamente, lo que podemos anotar como un éxito hasta ahora:
+
+![Ejecución inicial del código](Pantallazos/3.png)
+
+![Resultados de las métricas iniciales](Pantallazos/4.png)
+
+Sin embargo las métricas de Precision y F1-Score nos dieron porcentajes de 42% y 56% respectivamente, por lo que tuvimos que acudir a nuestra matriz de confusión, porque sencillamente la métrica de precisión, nos dice cuantos de los vinos que el modelo etiquetó como Premium lo eran de verdad, resultando 42%, lo que significa que el modelo es un poco optimista en termino de etiquetar un vino de calidad “Premium” dejando pasar unos de calidad estándar dentro de este grupo, pero no permitió que los vinos premium se perdieran como estándar. Así ratificamos con este modelo inicial que sigue siendo necesario un enólogo, sommelier o técnico vitivinícola para evitar hayan esos falsos positivos antes de embotellar, sin embargo, no se perdieron vinos de calidad Premium debido a la precisión en este modelo. 
+
+![Matriz de confusión](Pantallazos/5.png)
+
+Como parte del proceso es mejorar a medida que se van dando los resultados que se van guardando en la base de datos, se espera mejorar estos valores en futuras generaciones del modelo en el archivo .pkl que es el reemplazable.
+Igualmente como se puede evidenciar en los archivos, se creó el modelo base para la API de nombre “wine_quality_model.pkl” tal y como se detalló en la parte inicial de este proyecto.
+
+![Generación del archivo .pkl](Pantallazos/6.png)
+
+Ahora, decidimos irnos con la instalación de Jupyter Notebook, así podríamos ver cada parte del proceso para sustentarlo. La única actualización que no genera ningún cambio en lo comprometido en el proyecto es que vamos a pasar de tener un archivo .py a uno .ipynb.
+
+En este archivo se explica paso a paso el funcionamiento de nuestro modelo predictivo, y empezamos por la carga del modelo de datos, y una muestra de los datos a analizar y procesar:
+
+![Carga y exploración de datos](Pantallazos/7.png)
+
+Luego pasamos a la definición de distribución y etiquetado de la calidad:
+
+![Etiquetado de la variable de calidad](Pantallazos/8.png)
+
+Separamos los datos y definimos qué será usado para el entrenamiento y qué se irá para el testeo del modelo:
+
+![Separación de datos](Pantallazos/9.png)
+
+Seguimos con el entrenamiento del modelo y la generación del archivo .pkl que va a ser el cerebro de nuestra API
+
+Analizamos los resultados basados en la matriz de confusión, como lo hicimos anteriormente, y finalmente hacemos pruebas de nuestro modelo simulando una API que es la que entregaremos en entregas futuras del proyecto. Después de este segundo análisis nos dimos cuenta que aunque propusimos superar el 80% en las cuatro métricas, nos encontramos que esto no es alcanzable con este dataset en el que solo el 20% de los vinos son Premium, y las variables fisicoquímicas no explican completamente la calidad sensorial del vino. Por eso después de eso priorizamos el Recall (86,05%), para no dejar pasar vinos Premium por error, aceptando una Precision más baja (41,57%) como un trade-off consciente y documentado del proyecto.
