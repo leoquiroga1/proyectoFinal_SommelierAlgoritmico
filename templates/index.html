@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>🍷 Sommelier Algorítmico</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        .contenedor {
+            background: white;
+            width: 450px;
+            margin: auto;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0px 5px 20px rgba(0,0,0,0.15);
+        }
+
+        h1 {
+            color: #722F37;
+            margin-bottom: 5px;
+        }
+
+        .subtitulo {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #444;
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #722F37;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #5A252B;
+        }
+
+        .resultado {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .porcentaje {
+            color: #722F37;
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .vino {
+            font-size: 22px;
+            color: #722F37;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <h1>🍷 Sommelier Algorítmico</h1>
+
+    <p class="subtitulo">
+        Clasificación inteligente de vinos
+    </p>
+
+    <form action="/predecir" method="POST">
+
+        <label>Nivel de Cuerpo del Vino</label><br>
+
+        <input
+            type="number"
+            step="0.1"
+            name="alcohol"
+            required>
+
+        <label>Acidez del Vino</label><br>
+
+        <input
+            type="number"
+            step="0.01"
+            name="volatile"
+            required>
+
+        <br>
+
+        <button type="submit">
+            Evaluar Vino
+        </button>
+
+    </form>
+
+    {% if resultado %}
+
+    <div class="resultado">
+
+        <h2 class="vino">
+            {{ resultado }}
+        </h2>
+
+        <p>
+            Probabilidad de clasificación Premium
+        </p>
+
+        <div class="porcentaje">
+            {{ probabilidad }}%
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+
+</html>
