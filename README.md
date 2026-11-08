@@ -1,9 +1,12 @@
 # Proyecto Final: Sommelier Algorítmico - Control de Calidad Automatizado para Viñedos
 **Materia:** Teoría de la Computación  
 **Estudiantes:**
-Leonardo Quiroga
-Kimberly Moreno
-Linda Ortiz
+- Leonardo Quiroga
+- Kimberly Moreno
+- Linda Ortiz
+
+**Link del repositorio:**
+https://github.com/leoquiroga1/proyectoFinal_SommelierAlgoritmico.git
 
 ---
 
