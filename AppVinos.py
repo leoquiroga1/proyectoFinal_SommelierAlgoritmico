@@ -4,51 +4,109 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Cargar modelo
+# =====================================
+# CARGA DEL MODELO
+# =====================================
+
 with open("wine_quality_model.pkl", "rb") as f:
     modelo = pickle.load(f)
 
+print("Modelo cargado:")
+print(modelo)
+
+# =====================================
+# PAGINA PRINCIPAL
+# =====================================
 
 @app.route("/")
 def inicio():
     return render_template(
         "index.html",
         resultado=None,
-        probabilidad=None
+        recomendacion=None,
+        comentarios=None
     )
 
+# =====================================
+# PREDICCION
+# =====================================
 
 @app.route("/predecir", methods=["POST"])
 def predecir():
 
     alcohol = float(request.form["alcohol"])
-    volatil = float(request.form["volatile"])
+    volatile_acidity = float(request.form["volatile_acidity"])
+    sulphates = float(request.form["sulphates"])
 
     datos = pd.DataFrame([{
-        "fixed acidity": 7.0,
-        "volatile acidity": volatil,
-        "citric acid": 0.1,
-        "residual sugar": 2.0,
-        "chlorides": 0.07,
-        "free sulfur dioxide": 10,
-        "total sulfur dioxide": 40,
-        "density": 0.997,
-        "pH": 3.4,
-        "sulphates": 0.6,
+        "fixed acidity": float(request.form["fixed_acidity"]),
+        "volatile acidity": volatile_acidity,
+        "citric acid": float(request.form["citric_acid"]),
+        "residual sugar": float(request.form["residual_sugar"]),
+        "chlorides": float(request.form["chlorides"]),
+        "free sulfur dioxide": float(request.form["free_sulfur_dioxide"]),
+        "total sulfur dioxide": float(request.form["total_sulfur_dioxide"]),
+        "density": float(request.form["density"]),
+        "pH": float(request.form["ph"]),
+        "sulphates": sulphates,
         "alcohol": alcohol
     }])
 
     prediccion = modelo.predict(datos)[0]
-    probabilidad = modelo.predict_proba(datos)[0]
 
-    resultado = "🍷 PREMIUM" if prediccion == 1 else "🍷 ESTÁNDAR"
+    # =====================================
+    # ANALISIS COMPLEMENTARIO
+    # =====================================
+
+    comentarios = []
+
+    if alcohol >= 11:
+        comentarios.append(
+            "✅ Nivel de alcohol favorable para vinos de alta calidad"
+        )
+
+    if volatile_acidity < 0.5:
+        comentarios.append(
+            "✅ Acidez volátil controlada"
+        )
+
+    if sulphates >= 0.6:
+        comentarios.append(
+            "✅ Buena concentración de sulfatos"
+        )
+
+    # =====================================
+    # RESULTADO DEL MODELO
+    # =====================================
+
+    if prediccion == 1:
+
+        resultado = "🍷 VINO PREMIUM"
+
+        recomendacion = (
+            "Calidad estimada igual o superior a 7. "
+            "Se recomienda proceder con el embotellado de reserva especial."
+        )
+
+    else:
+
+        resultado = "🍷 VINO ESTÁNDAR"
+
+        recomendacion = (
+            "Calidad estimada inferior a 7. "
+            "Se recomienda destinar el producto a la línea comercial estándar."
+        )
 
     return render_template(
-        "index.html",
-        resultado=resultado,
-        probabilidad=round(probabilidad[1] * 100, 2)
-    )
+    "index.html",
+    resultado=resultado,
+    recomendacion=recomendacion,
+    comentarios=comentarios
+)
 
+# =====================================
+# INICIO APP
+# =====================================
 
 if __name__ == "__main__":
     app.run(debug=True)
