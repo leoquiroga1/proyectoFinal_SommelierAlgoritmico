@@ -330,3 +330,111 @@ Separamos los datos y definimos qué será usado para el entrenamiento y qué se
 Seguimos con el entrenamiento del modelo y la generación del archivo .pkl que va a ser el cerebro de nuestra API
 
 Analizamos los resultados basados en la matriz de confusión, como lo hicimos anteriormente, y finalmente hacemos pruebas de nuestro modelo simulando una API que es la que entregaremos en entregas futuras del proyecto. Después de este segundo análisis nos dimos cuenta que aunque propusimos superar el 80% en las cuatro métricas, nos encontramos que esto no es alcanzable con este dataset en el que solo el 20% de los vinos son Premium, y las variables fisicoquímicas no explican completamente la calidad sensorial del vino. Por eso después de eso priorizamos el Recall (86,05%), para no dejar pasar vinos Premium por error, aceptando una Precision más baja (41,57%) como un trade-off consciente y documentado del proyecto.
+## 14. Glosario
+
+Para facilitar la lectura del proyecto a personas que no están familiarizadas con Machine Learning o con la industria vitivinícola, definimos los términos técnicos que usamos a lo largo del documento:
+
+### 14.1 Términos de Machine Learning
+
+| Término | Definición |
+|---|---|
+| **Machine Learning (Aprendizaje Automático)** | Rama de la inteligencia artificial en la que un algoritmo aprende patrones a partir de datos históricos para hacer predicciones sobre datos nuevos, sin ser programado con reglas explícitas. |
+| **Clasificación binaria** | Tipo de problema en el que el modelo debe asignar cada registro a una de dos categorías. En nuestro caso: **Premium (1)** o **Estándar (0)**. |
+| **Árbol de Decisión (Decision Tree)** | Algoritmo de clasificación que divide los datos mediante una secuencia de preguntas del tipo "¿el alcohol es mayor a 11,5%?", formando una estructura de ramas y hojas. Es fácil de interpretar porque cada predicción puede explicarse siguiendo el camino del árbol. |
+| **Variable de entrada (Feature)** | Cada una de las características que recibe el modelo para hacer su predicción. En este proyecto son las 11 variables fisicoquímicas del vino. |
+| **Variable objetivo (Target / Etiqueta)** | Lo que el modelo intenta predecir. En nuestro caso es la columna `Premium`, creada a partir de la columna `quality` (1 si la calidad es ≥ 7, 0 si es menor). |
+| **Dataset** | Conjunto de datos organizado en filas (registros, en este caso vinos) y columnas (variables). |
+| **Conjunto de entrenamiento (Train)** | Porción de los datos (80%) con la que el modelo aprende los patrones. |
+| **Conjunto de prueba (Test)** | Porción de los datos (20%) que se reserva y que el modelo nunca ve durante el entrenamiento. Se usa únicamente para medir su desempeño real. |
+| **`train_test_split`** | Función de Scikit-Learn que separa el dataset en conjuntos de entrenamiento y prueba. Usamos el parámetro `stratify` para que ambos conjuntos conserven la misma proporción de vinos Premium y Estándar. |
+| **Datos desbalanceados** | Situación en la que una clase tiene muchos más registros que la otra. En nuestro dataset la gran mayoría de vinos son Estándar y muy pocos son Premium. |
+| **`class_weight='balanced'`** | Parámetro del modelo que le da más peso a los errores cometidos sobre la clase minoritaria (Premium), para compensar el desbalance de los datos. |
+| **SMOTE** | Técnica de sobremuestreo que genera ejemplos sintéticos de la clase minoritaria para balancear el dataset. Se consideró como alternativa de mitigación. |
+| **Hiperparámetro** | Configuración del modelo que se define antes de entrenarlo y que no se aprende de los datos, por ejemplo `max_depth`. |
+| **`max_depth` (Profundidad máxima)** | Hiperparámetro que limita cuántos niveles de preguntas puede tener el árbol. Lo fijamos en 5 para evitar el sobreajuste. |
+| **Sobreajuste (Overfitting)** | Cuando el modelo se "aprende de memoria" los datos de entrenamiento y por eso funciona muy bien con ellos, pero falla con datos nuevos. |
+| **Fuga de información (Data Leakage)** | Error en el que información del conjunto de prueba se filtra durante el entrenamiento, haciendo que las métricas parezcan mejores de lo que realmente son. |
+| **Modelo de referencia (Baseline)** | Modelo muy simple (por ejemplo, uno que siempre predice "Estándar") que sirve como punto de comparación para demostrar que nuestro modelo realmente aporta valor. |
+| **Inferencia** | Proceso de usar un modelo ya entrenado para predecir la categoría de un dato nuevo. |
+| **Sesgo (Bias)** | Tendencia sistemática del modelo o de los datos a favorecer ciertos resultados. Por ejemplo, favorecer vinos con características "industriales" por sobre vinos artesanales. |
+
+### 14.2 Métricas de evaluación
+
+| Término | Definición |
+|---|---|
+| **Matriz de Confusión** | Tabla que compara las predicciones del modelo contra los valores reales, mostrando los aciertos y errores por cada clase. |
+| **Verdadero Positivo (VP)** | El modelo predice Premium y el vino realmente es Premium. |
+| **Falso Positivo (FP)** | El modelo predice Premium pero el vino realmente es Estándar. |
+| **Verdadero Negativo (VN)** | El modelo predice Estándar y el vino realmente es Estándar. |
+| **Falso Negativo (FN)** | El modelo predice Estándar pero el vino realmente es Premium. |
+| **Accuracy (Exactitud)** | Porcentaje total de predicciones correctas: (VP + VN) / Total. |
+| **Precision (Precisión)** | De todos los vinos que el modelo etiquetó como Premium, qué porcentaje realmente lo era: VP / (VP + FP). |
+| **Recall (Exhaustividad / Sensibilidad)** | De todos los vinos que realmente eran Premium, qué porcentaje logró detectar el modelo: VP / (VP + FN). |
+| **F1-Score** | Media armónica entre Precision y Recall. Resume en un solo valor el equilibrio entre ambas métricas y es especialmente útil con datos desbalanceados. |
+| **Trade-off** | Compromiso en el que mejorar un aspecto implica empeorar otro. En nuestro proyecto priorizamos el Recall aceptando una Precision más baja. |
+
+### 14.3 Términos de arquitectura y software
+
+| Término | Definición |
+|---|---|
+| **API (Application Programming Interface)** | Interfaz que permite que otros programas o usuarios se comuniquen con el sistema enviando datos y recibiendo respuestas. Nuestra API recibe las 11 variables y devuelve la clasificación del vino. |
+| **Endpoint** | Dirección específica de la API que atiende un tipo de solicitud, por ejemplo `/predecir`. |
+| **JSON** | Formato de texto estándar para intercambiar datos entre sistemas, basado en pares clave-valor. |
+| **Flask** | Framework ligero de Python para construir aplicaciones web y APIs. |
+| **FastAPI** | Framework moderno de Python para construir APIs de alto rendimiento. |
+| **Pickle (`.pkl`)** | Formato de Python para serializar (guardar en un archivo) objetos, como un modelo ya entrenado, y cargarlos después sin tener que reentrenarlo. |
+| **Serialización** | Proceso de convertir un objeto en memoria (como el modelo) en un archivo que puede almacenarse y reutilizarse. |
+| **Modelo C4** | Método para documentar la arquitectura de software mediante diagramas en cuatro niveles de detalle: Contexto, Contenedores, Componentes y Código. |
+| **ADR (Architecture Decision Record)** | Registro breve que documenta una decisión de arquitectura importante: su contexto, la decisión tomada, sus consecuencias y cómo se validará. |
+| **Driver arquitectónico** | Requisito o restricción que tiene mayor influencia en el diseño de la arquitectura, como la precisión, la latencia o la modificabilidad. |
+| **Latencia** | Tiempo que tarda el sistema en responder desde que recibe una solicitud. |
+| **Arquitectura en capas** | Estilo arquitectónico que organiza el sistema en niveles con responsabilidades separadas (presentación, aplicación y modelo de ML). |
+| **Entorno virtual (venv)** | Carpeta aislada que contiene las librerías de Python del proyecto, evitando conflictos con otras instalaciones del equipo. |
+| **Jupyter Notebook (`.ipynb`)** | Documento interactivo que combina código, resultados y texto explicativo, ejecutado por celdas. |
+
+### 14.4 Variables fisicoquímicas del vino
+
+| Variable (dataset) | Nombre en español | Definición |
+|---|---|---|
+| **fixed acidity** | Acidez fija | Ácidos que no se evaporan fácilmente (principalmente ácido tartárico). Expresada en g/dm³. |
+| **volatile acidity** | Acidez volátil | Cantidad de ácido acético. En niveles altos produce un sabor desagradable a vinagre. Expresada en g/dm³. |
+| **citric acid** | Ácido cítrico | Presente en pequeñas cantidades, aporta frescura al vino. Expresado en g/dm³. |
+| **residual sugar** | Azúcar residual | Azúcar que queda después de terminar la fermentación. Expresada en g/dm³. |
+| **chlorides** | Cloruros | Cantidad de sal en el vino. Expresada en g/dm³. |
+| **free sulfur dioxide** | Dióxido de azufre libre | Forma libre del SO₂ que previene el crecimiento microbiano y la oxidación. Expresado en mg/dm³. |
+| **total sulfur dioxide** | Dióxido de azufre total | Suma del SO₂ libre y combinado. En concentraciones altas se percibe en el olor y sabor. Expresado en mg/dm³. |
+| **density** | Densidad | Depende principalmente del contenido de alcohol y azúcar. Expresada en g/cm³. |
+| **pH** | pH | Nivel de acidez en una escala de 0 a 14. La mayoría de los vinos están entre 3 y 4. |
+| **sulphates** | Sulfatos | Aditivo que contribuye a los niveles de SO₂ y actúa como antimicrobiano y antioxidante. Expresado en g/dm³. |
+| **alcohol** | Alcohol | Porcentaje de alcohol por volumen (% vol.). |
+| **quality** | Calidad | Puntuación sensorial de 0 a 10 asignada por catadores expertos (mediana de al menos 3 evaluaciones). Es la base para construir la etiqueta Premium/Estándar. |
+
+---
+
+## 15. Referencias
+
+### 15.1 Fuente del dataset
+
+* Cortez, P., Cerdeira, A., Almeida, F., Matos, T., & Reis, J. (2009). *Modeling wine preferences by data mining from physicochemical properties*. Decision Support Systems, 47(4), 547-553. https://doi.org/10.1016/j.dss.2009.05.016
+* Cortez, P., Cerdeira, A., Almeida, F., Matos, T., & Reis, J. (2009). *Wine Quality* [Dataset]. UCI Machine Learning Repository. https://archive.ics.uci.edu/dataset/186/wine+quality
+
+### 15.2 Herramientas y librerías
+
+* **Python Software Foundation.** *Python Language Reference*. https://www.python.org
+* **Pedregosa, F., et al. (2011).** *Scikit-learn: Machine Learning in Python*. Journal of Machine Learning Research, 12, 2825-2830. https://scikit-learn.org
+* **McKinney, W. (2010).** *Data Structures for Statistical Computing in Python*. Proceedings of the 9th Python in Science Conference, 56-61. https://pandas.pydata.org
+* **Hunter, J. D. (2007).** *Matplotlib: A 2D Graphics Environment*. Computing in Science & Engineering, 9(3), 90-95. https://matplotlib.org
+* **Pallets Projects.** *Flask Documentation*. https://flask.palletsprojects.com
+* **Ramírez, S.** *FastAPI Documentation*. https://fastapi.tiangolo.com
+* **Project Jupyter.** *Jupyter Notebook*. https://jupyter.org
+* **Python Software Foundation.** *pickle — Python object serialization*. https://docs.python.org/3/library/pickle.html
+* **Mermaid.** *Mermaid Diagramming and Charting Tool*. https://mermaid.js.org
+
+### 15.3 Decisiones técnicas y metodología
+
+* **Breiman, L., Friedman, J., Olshen, R., & Stone, C. (1984).** *Classification and Regression Trees*. Wadsworth. (Fundamento del algoritmo de Árbol de Decisión utilizado).
+* **Scikit-learn developers.** *Decision Trees*. https://scikit-learn.org/stable/modules/tree.html
+* **Scikit-learn developers.** *Metrics and scoring: quantifying the quality of predictions*. https://scikit-learn.org/stable/modules/model_evaluation.html
+* **Chawla, N. V., Bowyer, K. W., Hall, L. O., & Kegelmeyer, W. P. (2002).** *SMOTE: Synthetic Minority Over-sampling Technique*. Journal of Artificial Intelligence Research, 16, 321-357. https://doi.org/10.1613/jair.953
+* **Brown, S.** *The C4 model for visualising software architecture*. https://c4model.com
+* **Nygard, M. (2011).** *Documenting Architecture Decisions*. https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions
